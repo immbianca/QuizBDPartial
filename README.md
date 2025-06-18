@@ -1,0 +1,2 @@
+# QuizBDPartial
+Micunealta secreta
