@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Futuristic - Baze de Date</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00ffff;
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .title {
+            font-family: 'Orbitron', monospace;
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: brightness(1); }
+            to { filter: brightness(1.2); }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0a0ff;
+            font-weight: 300;
+        }
+
+        .stats-panel {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            min-width: 150px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00ffff;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #a0a0ff;
+            margin-top: 5px;
+        }
+
+        .quiz-container {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .question-counter {
+            text-align: center;
+            font-family: 'Orbitron', monospace;
+            color: #00ffff;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .question {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .option:hover:before {
+            left: 100%;
+        }
+
+        .option:hover {
+            border-color: #00ffff;
+            transform: translateX(10px);
+            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.2);
+        }
+
+        .option.selected {
+            background: rgba(0, 255, 255, 0.2);
+            border-color: #00ffff;
+        }
+
+        .option.correct {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00ff00;
+            animation: correct-pulse 0.6s ease;
+        }
+
+        .option.incorrect {
+            background: rgba(255, 0, 0, 0.2);
+            border-color: #ff0000;
+            animation: incorrect-shake 0.6s ease;
+        }
+        
+        .option.partial {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #ffd700;
+        }
+
+        @keyframes correct-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        @keyframes incorrect-shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: 'Orbitron', monospace;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result-screen {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .result-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .result-score {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #00ffff;
+            margin-bottom: 20px;
+        }
+
+        .result-feedback {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #a0a0ff;
+        }
+
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 15px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Exo 2', sans-serif;
+        }
+
+        .mode-btn.active {
+            background: rgba(0, 255, 255, 0.2);
+            border-color: #00ffff;
+        }
+
+        .hidden {
+            display: none;
+        }
+        
+        .multiple-info {
+            text-align: center;
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .quiz-container {
+                padding: 20px;
+            }
+            
+            .question {
+                font-size: 1.1rem;
+            }
+            
+            .option {
+                padding: 15px;
+                font-size: 1rem;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation" id="backgroundAnimation"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1 class="title">NEURAL QUIZ</h1>
+            <p class="subtitle">Sistemul avansat de învățare pentru baze de date</p>
+        </div>
+
+        <div class="stats-panel">
+            <div class="stat-card">
+                <span class="stat-number" id="totalQuestions">61</span>
+                <span class="stat-label">Întrebări</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="correctAnswers">0</span>
+                <span class="stat-label">Corecte</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="accuracy">0%</span>
+                <span class="stat-label">Acuratețe</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="streak">0</span>
+                <span class="stat-label">Șir corect</span>
+            </div>
+        </div>
+
+        <div class="mode-selector">
+            <div class="mode-btn active" data-mode="practice">Practică</div>
+            <div class="mode-btn" data-mode="test">Test complet</div>
+            <div class="mode-btn" data-mode="random">Random</div>
+        </div>
+
+        <div class="quiz-container" id="quizContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="question-counter" id="questionCounter">
+                Întrebarea 1 din 61
+            </div>
+            
+            <div class="question" id="questionText">
+                Încarcă prima întrebare...
+            </div>
+            
+            <div id="multipleInfo" class="multiple-info hidden">
+                ⚠️ Această întrebare are mai multe răspunsuri corecte!
+            </div>
+            
+            <div class="options" id="optionsContainer">
+                <!-- Options will be populated by JavaScript -->
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-secondary" id="prevBtn">← Precedenta</button>
+                <button class="btn btn-primary" id="nextBtn">Următoarea →</button>
+                <button class="btn btn-secondary" id="restartBtn">Restart</button>
+            </div>
+        </div>
+
+        <div class="result-screen hidden" id="resultScreen">
+            <div class="result-title">MISIUNE COMPLETĂ</div>
+            <div class="result-score" id="finalScore">0/0</div>
+            <div class="result-feedback" id="resultFeedback">Excelent progres!</div>
+            <div class="controls">
+                <button class="btn btn-primary" id="retryBtn">Încearcă din nou</button>
+                <button class="btn btn-secondary" id="reviewBtn">Revizuiește greșelile</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quiz data
+        const quizData = [
+         {
+        question: "Un trigger poate fi declanșat de o comandă:",
+        options: [
+            "INSERT, UPDATE sau DELETE",
+            "Doar INSERT sau DELETE",
+            "SELECT, INSERT, UPDATE sau DELETE",
+            "Doar INSERT sau UPDATE",
+            "Doar DELETE sau UPDATE"
+        ],
+        correct: 0
+    },
+    {
+        question: "În corpul unui trigger de tip BEFORE și FOR EACH ROW, declanșat pentru o operație pe tabela Tabel(cu coloane numerice Col_1, Col_2,…), care din următoarele linii de cod nu se pot efectua niciodată?",
+        options: [
+            "UPDATE Tabel set Col_2:=0;",
+            ":NEW.Col_1:=:OLD.Col_2+1;",
+            ":OLD.Col_1:=0;",
+            ":New.Col_1:=0"
+        ],
+        correct: 2
+    },
+    {
+        question: "Subinterogările pot fi încuibare(integrate) în:",
+        options: [
+            "Comenzi SELECT, INSERT, DELETE sau UPDATE",
+            "Doar comenzi SELECT",
+            "Doar comenzi UPDATE",
+            "Doar comenzi DELETE",
+            "Doar comenzi INSERT"
+        ],
+        correct: 1
+    },
+    {
+        question: "Presupunând tabela TABEL (având o coloană PRET de tip INT), care dintre interogările următoare returnează liniile cu un PRET mai mare sau egal cu 100?",
+        options: [
+            "SELECT * from TABEL order by PRET>=100;",
+            "SELECT * from TABEL having PRET>=100;",
+            "SELECT * from TABEL where PRET=>100;",
+            "SELECT * from TABEL where PRET>=100;"
+        ],
+        correct: 3
+    },
+    {
+        question: "Fiind data tabela ANGAJATI cu coloanele Id, Nume, Id_Sef, care dintre interogările următoare reprezintă practic o auto-joncțiune?",
+        options: [
+            "SELECT A.Id, A.Nume Angajat, B.Nume Sef from ANGAJATI A, ANGAJATI B where A.Id=B.Id;",
+            "SELECT A.Id, A.Nume Angajat, B.Nume Sef from ANGAJATI A, ANGAJATI B where A.Id_Sef=B.Id;",
+            "SELECT A.Id, B.Nume Angajat, A.Nume Sef from ANGAJATI A, ANGAJATI B where A.Id_Sef=B.Id_Sef;",
+            "SELECT Id, Nume, Id_sef from ANGAJATI A where A.Id=A.Id_Sef;"
+        ],
+        correct: 1
+    },
+    {
+        question: "Presupunând tabela TABEL1 cu coloana ID (de tip INT), care dintre comenzile următoare este greșită?",
+        options: [
+            "DELETE from TABEL1 where ID=1;",
+            "DELETE from TABEL1;",
+            "DELETE from TABEL1 where ID IS NULL;",
+            "DELETE * from TABEL1;"
+        ],
+        correct: 3
+    },
+    {
+        question: "Care dintre următoarele expresii nu sunt cuvinte cheie rezervate SQL?",
+        options: [
+            "GROUPING",
+            "ORDER",
+            "FROM",
+            "HAVING"
+        ],
+        correct: 0
+    },
+    {
+        question: "Care dintre următoarele obiecte PL/SQL nu au parametrii de intrare?",
+        options: [
+            "Funcțiile",
+            "Trigger-ele (declanșatoarele)",
+            "Secvențele (Sequence)",
+            "Procedurile stocate"
+        ],
+        correct: 1
+    },
+    {
+        question: "În cadrul unui trigger, operatorii :NEW, respectiv :OLD pot fi utilizați doar dacă:",
+        options: [
+            "Trigger-ul este de tip AFTER",
+            "Trigger-ul este definit la nivel de comandă",
+            "Trigger-ul este de tip BEFORE",
+            "Trigger-ul este definit la nivel de linie"
+        ],
+        correct: 3
+    },
+    {
+        question: "Fie tabela DOI având câmpurile CNP(int, primary key) și NUME(varchar(15)), având o linie completată cu date. Care dintre comenzile următoare nu se pot executa?",
+        options: [
+            "ALTER TABLE doi ADD salar INT;",
+            "ALTER TABLE doi MODIFY cnp CHAR(13);",
+            "ALTER TABLE doi MODIFY nume VARCHAR(20);",
+            "ALTER TABLE doi ADD UNIQUE(nume);"
+        ],
+        correct: 1
+    },
+    {
+        question: "Care dintre comenzile următoare nu se pot executa sau vor funcționa defectuos (presupunând tabela INCASARI cu coloanele COD și SUMA)?",
+        options: [
+            "Select COD, sum(SUMA) from INCASARI group by COD;",
+            "Select COD, sum(SUMA) from INCASARI where SUMA=NULL group by COD;",
+            "Select avg(SUMA) from INCASARI order by COD;",
+            "Select COD, avg(SUMA) from INCASARI having avg(SUMA)>100 group by COD;"
+        ],
+        correct: 1
+    },
+    {
+        question: "În cadrul unui trigger (declanșat pe o tabelă TAB1, având coloanele CON1, CON2,…), următoarea secvență de cod este permisă:",
+        options: [
+            "BEFORE DELETE OF tab1;",
+            "AFTER UPDATE ON con1;",
+            "AFTER INSERT ON tab1;",
+            "AFTER UPDATE OF con1 ON tab1;"
+        ],
+        correct: 3
+    },
+    {
+        question: "Se consideră tabela TAB1 (având și coloanele Nume și Salar), respectiv variabilele Var1 și Var2 (declarate adecvat). Comanda (PL/SQL): SELECT Nume, Salar INTO Var1, Var2 From TAB1, se poate executa doar dacă:",
+        options: [
+            "Tabela TAB1 are oricâte coloane și oricâte linii;",
+            "Comanda este greșită fără o clauză WHERE pentru filtrare;",
+            "Tabela TAB1 are oricâte coloane, dar maxim o linie;",
+            "Tabela TAB1 are doar două coloane (cele referite);"
+        ],
+        correct: 2
+    },
+    {
+        question: "Ce urmează după o clauză WHERE?",
+        options: [
+            "O listă de una sau mai multe coloane selectate;",
+            "Condiția verificată pentru selecția liniilor;",
+            "Numele tabelei asupra căreia se aplică comanda SQL în cauză;",
+            "Condiția verificată pentru selecția liniilor, fiind utilizabilă doar într-o comandă SELECT."
+        ],
+        correct: 1
+    },
+    {
+        question: "Considerându-se tabela ‘table1’ cu 3 coloane (în ordinea : id, nume, salar), adăugarea unei noi linii se poate face cu comanda:",
+        options: [
+            "INSERT INTO table1 (id,salar,nume) VALUES (10,ion,2000);",
+            "INSERT INTO table1 (id,salar,nume) VALUES (10,'ion',2000);",
+            "APPEND INTO table1 (id,salar,nume) VALUES (10,ion,2000);",
+            "INSERT INTO table1 VALUES (10,'ion',2000);"
+        ],
+        correct: 3
+    },
+    {
+        question: "Presupunând tabelele A și B (având fiecare o coloană ID), care dintre comenzile următoare (SQL Oracle) este greșită?",
+        options: [
+            "SELECT A*,B* from A,B where A.id=B.id(+) and B.id is null;",
+            "SELECT A*,B* from A,B where A.id=B.id;",
+            "SELECT A*,B* from A,B where A.id(+)=B.id(+) and A.id is null and B.id is null;",
+            "SELECT A*,B* from A,B where A.id(+)=B.id and A.id is null;"
+        ],
+        correct: 2
+    },
+    {
+        question: "Care dintre comenzile următoare NU pot fi executate (presupunând tabela exceptio, cu coloanele COD și SUMA)?",
+        options: [
+            "Select count(SUMA), sum(SUMA) from INCASARI;",
+            "Select count() from INCASARI SI Select sum(*) from INCASARI;",
+            "Select count(*), sum(SUMA) from INCASARI;"
+        ],
+        correct: 1
+    },
+    {
+        question: "Care dintre expresiile următoare sunt funcții de grup (SQL)?",
+        options: [
+            "LEFT",
+            "JOIN",
+            "NVL",
+            "AVG"
+        ],
+        correct: 3
+    },
+    {
+        question: "Considerând tabelele tabel1 și tabel2, o comandă: SELECT A.*, B.* from tabel1 A, tabel2B:",
+        options: [
+            "Este corectă sintactic, dar nu are o logică funcțională;",
+            "Este corectă sintactic și logic, permițând afișarea relaționată a liniilor din cele două tabele;",
+            "Este greșită sintactic, coloanele nefiind referite adecvat;",
+            "Este greșită sintactic, necesitând o clauză WHERE;"
+        ],
+        correct: 0
+    },
+    {
+        question:"Care dintre comenzile următoare se pot executa (presupunând tabela VANZARI) cucoloanele COD, PRODUS, PRET)?",
+        options:[
+            "Select COD, avg(PRET) form VANZARI where avg(PRET)>10 group by COD;",
+            "Select COD, PRODUS, MAX(PRET) from VANZARI order by COD;",
+            "Select MAX(PRET) from VANZARI group by COD;",
+            "Select COD, avg(PRET) from VANZARI where COD>10 group by COD SI Select COD, avg(PRET) from VANZARI having avg(PRET) >10 group by COD;"
+        ],
+        correct: 3
+    },
+        {
+        question: "Considerând tabela părinte (master) A și tabela copil (slave) B (relaționate între ele printr-o constrângere FOREIGN KEY pe o coloană comună Id), ambele având înregistrări, care dintre interogările următoare returnează liniile din tabela părinte care nu au corespondent în tabela copil?",
+        options: [
+            "SELECT A.*, B.id from A,B where A.id=B.id;",
+            "SELECT A.*, B.id from A,B where A.id=B.id(+);",
+            "SELECT A.*, B.id from A,B where A.id=B.id(+) and A.id is null;",
+            "SELECT A.*, B.id from A,B where A.id=B.id(+) and B.id is null;"
+        ],
+        correct: 3
+    },
+    {
+        question: "Fie tabela TAB1 având câmpurile cnp(cheie primară) și nume. Considerând vederea VED1, creată cu comanda CREATE view VED1 as (select nume from tab1), care din comenzile următoare nu se pot executa?",
+        options: [
+            "SELECT * FROM ved1;",
+            "SELECT cnp, nume FROM ved1 SI INSERT INTO ved1 VALUES ('ion');",
+            "DELETE FROM ved1;"
+        ],
+        correct: 1
+    },
+    {
+        question: "Pentru o operație DELETE declanșatoare a unui trigger (corect sintactic și funcțional) declanșat la nivel de linie, construcțiile de tipul :NEW din corpul trigger-ului vor conține la un moment dat:",
+        options: [
+            "Valori (nule sau nenule) din linia ștearsă;",
+            "Valori NULL;",
+            "Valori (nule sau nenule) din liniile șterse;",
+            "Nu pot fi utilizare, semnalându-se eroare;"
+        ],
+        correct: 1
+    },
+    {
+        question: "Considerând tabela DEPOZIT (ID, PRODUS, PRET_BUCATA, STOC) și tabela VANZARI (ID, CANTITATE, PRET_TOTAL), relaționate între ele printr-o constrângere FOREIGN KEY pe o coloană comună Id, implementarea printr-un trigger (declanșat la adăugarea unei linii în tabela VANZARI) a recalculării coloanei STOC=STOC-CANTITATE implică:",
+        options: [
+            ":NEW.STOC:=...;",
+            ":NEW.STOC:=... where Id:=NEW.Id;",
+            "UPDATE DEPOZIT set STOC=... where Id=:NEW.Id;",
+            "UPDATE DEPOZIT set STOC=... where Id:=NEW.Id;"
+        ],
+        correct: 2
+    },
+    {
+        question: "La o execuție a unei comenzi SQL DELETE, aceasta poate să:",
+        options: [
+            "Șteargă strict doar o linie din mai multe tabele;",
+            "Șteargă o tabelă;",
+            "Șteargă oricâte linii dintr-o tabelă;",
+            "Șteargă strict doar o linie dintr-o tabelă;"
+        ],
+        correct: 2
+    },
+    {
+        question: "Considerând tabela TABELA (cu coloanele Col1, Col2,...) având toate liniile completate cu date, care două comenzi sunt echivalente funcțional (având efect similar)?",
+        options: [
+            "SELECT COUNT(*) SUM(Col2) from TABELA SI SELECT COUNT(Col2), SUM(Col2) from TABELA;",
+            "SELECT COUNT(Col2), SUM(*) from TABELA;",
+            "SELECT COUNT(Col2), SUM(Col1), SUM(Col1) from TABELA;"
+        ],
+        correct: 0
+    },
+    {
+        question: "Afișarea informației dintr-o tabelă într-o ordine ascendentă/crescătoare se poate face utilizând:",
+        options: [
+            "Comanda SELECT cu clauza GROUP BY și parametrul ASC;",
+            "Comanda SELECT cu clauza ORDER BY;",
+            "Comanda CREATE TABLE cu clauza ORDER ASC;",
+            "Comanda SELECT cu clauza ASC;"
+        ],
+        correct: 1
+    },
+    {
+        question: "Care dintre următoarele comenzi returnează o valoare NULL?",
+        options: [
+            "SELECT NVL(0,NULL) from DUAL;",
+            "SELECT NVL('',NULL) from DUAL;",
+            "SELECT NVL(NULL,0) from DUAL;",
+            "SELECT NVL(NULL,) from DUAL;"
+        ],
+        correct: 1
+    },
+    {
+        question: "Fie tabela UNU având coloanele id (int primary key) și nume (varchar(12)), conținând două linii completate cu date. Care dintre comenzile următoare nu poate fi executată?",
+        options: [
+            "ALTER TABLE unu DROP COLUMN nume;",
+            "ALTER TABLE unu DROP primary key;",
+            "ALTER TABLE unu ADD salariu not null;",
+            "ALTER TABLE unu MODIFY id float;"
+        ],
+        correct: 2
+    },
+    {
+        question: "O sesiune EXCEPTION poate să apară:",
+        options: [
+            "Doar în cadrul unei funcții;",
+            "Doar în cadrul unui trigger;",
+            "În cadrul unei funcții, proceduri stocate sau trigger;",
+            "Doar în cadrul unei proceduri stocate;"
+        ],
+        correct: 2
+    },
+        {
+        question: "Considerându-se tabela ‘table1’ cu 3 câmpuri (id, nume, varsta), adăugarea unei noi linii se poate face cu comanda:",
+        options: [
+            "UPDATE INTO table1(id, nume, varsta) VALUES (10,'ion',20);",
+            "INSERT INTO table1(id, nume, varsta) VALUES (10,'ion',20) SI APPEND INTO table1(id, nume, varsta) VALUES (10,'ion',20);",
+            "INSERT INTO table1 VALUES (10,'ion',20);"
+        ],
+        correct: 1
+    },
+    {
+        question: "O comandă SQL: ALTER TABLE angaj DROP COLUMN unu, încearcă să:",
+        options: [
+            "Șteargă coloanele tabelei angaj;",
+            "Comanda nu este corect sintactic;",
+            "Șteargă tabela angaj având coloana unu;",
+            "Șteargă coloana unu a tabelei angaj;"
+        ],
+        correct: 3
+    },
+    {
+        question: "În cadrul unei funcții, este obligatorie utilizarea cel puțin a unei comenzi de genul:",
+        options: [
+            "Nici una dintre variantele propuse;",
+            "RETURN tip_variabila;",
+            "RETURN variabila/expresie;",
+            "RETURN;"
+        ],
+        correct: 1
+    },
+    {
+        question: "Condiționarea execuției corpului unui trigger se face cu:",
+        options: [
+            "Condiționarea execuției se face funcție de comanda declanșatoare (AFTER sau BEFORE);",
+            "Utilizarea unei comenzi condiționale IF sau EXIT WHEN în corpul triggerului;",
+            "Utilizarea clauzei condiționale WHEN, precedând secțiunea BEGIN...END;",
+            "Utilizarea clauzei condiționale WHEN, în secțiunea BEGIN...END;"
+        ],
+        correct: 0
+    },
+    {
+        question: "Pentru preluarea de date externe (din baza de date în variabile interne din cadrul corpului unui trigger), care dintre afirmațiile următoare sunt corecte?",
+        options: [
+            "Nu pot fi preluate date externe în corpul unui trigger;",
+            "Se folosesc parametrii de intrare din definiția trigger-ului;",
+            "Se folosesc comenzi PL/SQL de genul SELECT...INTO...;",
+            "Un trigger nu are parametrii de intrare."
+        ],
+        correct: 3
+    },
+    {
+        question: "Considerând o tabelă ANGAJATI (ID primary key, NUME, SALAR) având completate mai multe linii, preluarea într-o variabilă (Pl/SQL) VAR1 a conținutului unei anumite celule aferente coloanei SALAR se face cu o comandă de genul:",
+        options: [
+            "SELECT * from ANGAJATI into VAR1 where SALAT=...;",
+            "SELECT SALAR into VAR1 from ANGAJATI;",
+            "SELECT SALAR from ANGAJATI into VAR1 where ID=...;",
+            "SELECT SALAR into VAR1 from ANGAJATI where ID=...;"
+        ],
+        correct: 3
+    },
+    {
+        question: "Care dintre următoarele comenzi returnează totalul valorilor coloanei PRET din tabela VANZARI?",
+        options: [
+            "SELECT TOTAL(pret) FROM vanzari;",
+            "SELECT SUM(*) FROM vanzari.pret;",
+            "SELECT SUM(pret) WHERE vanzari;",
+            "SELECT SUM(pret) FROM vanzari;"
+        ],
+        correct: 3
+    },
+    {
+        question: "În contextul în care câmpul „id” este creat cu constrângerea UNIQUE, comanda SQL: CREATE TABLE sectie1 AS SELECT nume FROM sectie2 WHERE ID=10 are ca efect:",
+        options: [
+            "Eroare de creare din cauza lipsei primary key;",
+            "Preia doar structura tabelului sursă;",
+            "Se creează o tabelă nouă, sectie1, în care va fi stocată coloana nume din sectie2, unde valoarea coloanei id=10;",
+            "Este incorectă deoarece nu menționează explicit coloana ID;"
+        ],
+        correct: 2
+    },
+    {
+        question: "Care dintre interogările următoare poate returna și liniile din tabela TAB care conțin ‘Dan’ în coloana NUME?",
+        options: [
+            "SELECT * from TAB where NUME like 'Dan';",
+            "SELECT * from TAB where NUME like '%Dan';",
+            "SELECT * from TAB where NUME like 'Dan%';",
+            "SELECT * from TAB where NUME like '%Dan%';"
+        ],
+        correct: 3
+    },
+    {
+        question: "Câte linii poate returna comanda: SELECT nume, MIN(salar) AS „minim”, MAX(salar) FROM angajati2?",
+        options: [
+            "O singură linie deoarece sunt utilizate funcții de grup",
+            "O linie pentru fiecare angajat",
+            "Nicio linie dacă tabela este goală",
+            "Toate liniile distincte"
+        ],
+        correct: 0
+    },
+        {
+        question: "În cadrul unui bloc PL/SQL, care dintre următoarele afirmații sunt corecte?",
+        options: [
+            "O comandă SELECT nu poate fi utilizată direct;",
+            "O comandă SELECT poate fi utilizată cu clauza INTO (ca și comanda PL/SQL);",
+            "Comanda SELECT trebuie urmată obligatoriu de un COMMIT;",
+            "SELECT poate fi folosit doar în afara blocurilor PL/SQL;"
+        ],
+        correct: 1
+    },
+    {
+        question: "Comanda RETURN, fără precizarea unui parametru de ieșire returnat, poate fi folosită:",
+        options: [
+            "Doar în trigger, fără efect funcțional;",
+            "Doar în proceduri, nu și în funcții;",
+            "Pentru a încheia execuția fără returnarea unei valori;",
+            "Este interzisă fără valoare returnată;"
+        ],
+        correct: 2
+    },
+    {
+        question: "Care este efectul comenzii: SELECT nume, 12*salar AS salariul FROM angajati?",
+        options: [
+            "Afișează întreaga informație din câmpurile nume și salar, pe acesta din urmă actualizându-l în tabelă prin multiplicare cu 12;",
+            "Comanda este greșită sintactic;",
+            "Afișează numele și salariul multiplicat cu 12 sub pseudonimul salariul;",
+            "Afișează doar coloana salariul, fără nume;"
+        ],
+        correct: 2
+    },
+    {
+        question: "Comenzile COMMIT și ROLLBACK pot fi utilizate:",
+        options: [
+            "Doar în funcții;",
+            "Doar în trigger-e;",
+            "În cadrul unei proceduri stocate;",
+            "Numai în afara blocurilor PL/SQL;"
+        ],
+        correct: 2
+    },
+    {
+        question: "Care dintre informațiile aferente comenzii următoare sunt corecte (în contextul semnificației datelor din tabelă): CREATE TABLE tabel1 (cod_angajat INT, nume_angajat VARCHAR, salar NUMBER)?",
+        options: [
+            "Comanda este incorectă pentru că lipsesc constrângerile;",
+            "Comanda este corectă și va crea tabelul cu coloanele indicate;",
+            "VARCHAR necesită specificarea dimensiunii pentru a fi corect;",
+            "NUMBER trebuie înlocuit cu INT pentru a funcționa;"
+        ],
+        correct: 2
+    },
+    {
+        question: "Care dintre informațiile aferente comenzii următoare sunt corecte (în contextul semnificației datelor din tabelă): CREATE TABLE tabel1 (cod_angajat INT, nume_angajat CHAR, salar INT)?",
+        options: [
+            "Comanda este corectă;",
+            "CHAR nu necesită dimensiune;",
+            "Comanda este greșită sintactic, fiind necesară precizarea unor dimensiuni de câmpuri;",
+            "INT trebuie înlocuit cu NUMBER;"
+        ],
+        correct: 2
+    },
+    {
+        question: "În cadrul unei funcții, este obligatorie utilizarea cel puțin a unei comenzi de genul:",
+        options: [
+            "RETURN;",
+            "RETURN valoare;",
+            "COMMIT sau ROLLBACK;",
+            "Nici una dintre variantele propuse;",
+            "DECLARE;"
+        ],
+        correct: 0
+    },
+    {
+        question: "Fie tabela TAB1 având câmpurile cnp (cheie primară) și nume. Considerând vederea VED1, creată cu comanda CREATE view VED1 as (select * from tab1 WHERE cnp>10), care din comenzile următoare nu se pot executa?",
+        options: [
+            "SELECT * FROM ved1;",
+            "SELECT cnp FROM ved1;",
+            "UPDATE ved1 WHERE CNP>10; Si INSERT INTO ved1 VALUES('ION')",
+            "DELETE FROM ved1;",
+        ],
+        correct: 2
+    },
+    {
+        question: "Modificarea definiției unui câmp 'nume' (de tip VARCHAR(10)) al unei tabele 'evidenta' se poate face cu comanda:",
+        options: [
+            "ALTER TABLE evidenta CHANGE nume VARCHAR(30);",
+            "ALTER TABLE evidenta ALTER nume VARCHAR(13);",
+            "ALTER TABLE evidenta MODIFY nume VARCHAR(30);",
+            "ALTER TABLE evidenta CHANGE nume VARCHAR(30);"
+        ],
+        correct: 2
+    },
+    {
+        question: "Care dintre comenzile următoare sunt corecte (presupunând că există tabela TABELA cu coloanele UNU și DOI)?",
+        options: [
+            "SELECT TABELA.* from TABELA group by 1;",
+            "INSERT INTO TABELA VALUES(&var);",
+            "SELECT count(1), min(*) FROM TABELA;",
+            "SELECT * from TABELA for UPDATE;"
+        ],
+        correct: 3
+    },
+     {
+        question: "Ce face comanda SELECT COUNT (DISTINCT prof FROM) ANGAJATI?",
+        options: [
+            "Numără și afișează liniile distincte după câmpul 'prof' din tabela 'angajati'",
+            "Numără câte linii distincte sunt în tabela angajati",
+            "Afiseaza nr de linii din tabela angajati, distincte dupa campul prof si care nu continvaloarea NULL in coloana mentionata",
+            "Afișează liniile distincte după câmpul prof din tabela angajati, neconținând valoarea NULL"
+        ],
+        correct: 2
+    },
+    {
+        question: "În contextul comenzii SQL următoare: create table EVIDENTA(cod integer NOT NULL, nume VARCHAR(10), constraint constrangere UNIQUE(cod))",
+        options: [
+            "Câmpul cod trebuie să fie obligatoriu definit de tip INTEGER",
+            "Câmpul cod trebuie să fie obligatoriu definit de tip NOT NULL",
+            "Câmpul cod NU trebuie să fie obligatoriu definit de tip NOT NULL",
+            "Câmpul cod trebuie să fie obligatoriu definit de tip INTEGER și NOT NULL"
+        ],
+        correct: 3
+    },
+    {
+        question: "Efectul comenzii SELECT cod_sectie, AVG(salar) from ANGAJAT group by cod_sectie este:",
+        options: [
+            "Afișează informația din câmpul cod_sectie și media aritmetică a salariului salar pe angajați, ordonat după cod_sectie",
+            "Afișează nr de linii din tabela angajati, distincte după câmpul prof și care nu conțin valoarea NULL în coloana menționată",
+            "Calculează media salariului pe secția curentă și va afișa o singură linie cu cod_sectie și media calculată",
+            "Afișează codul secției cod_sectie și media aritmetică a salariului pe secție"
+        ],
+        correct: 3
+    },
+    {
+        question: "Referitor la comanda următoarele observații sunt corecte: create TABLE tabel1 (ID int NOT NULL PRIMARY KEY, produs VARCHAR(10) UNIQUE, caracteristici VARCHAR(200) UNIQUE NOT NULL)",
+        options: [
+            "Comanda nu se poate executa deoarece nu pot fi definite 2 chei unice",
+            "In contextul unei chei primare constrangerea not null explicit precizata este obligatorie si Este obligatorie clauza not null in contextul unei chei primare si Dimensiunea 200 nu este prea mare pt un camp de timp varchar"
+        ],
+        correct: 1
+    },
+    {
+        question: "Fie tabela SAL având câmpurile nr (cheie primară), nume și salariu. Considerând vederea ved creată cu comanda: CREATE view ved AS (select * from sal where salar<1000), care din comenzile următoare nu se pot executa?",
+        options: [
+            "INSERT INTO ved values(1,'ion',2000)",
+            "INSERT INTO ved (salar) values(500) si INSERT INTO ved (nume) values(ion)",
+            "INSERT INTO ved (nr, salar) values(1,1900)"
+        ],
+        correct: 1
+    },
+    {
+        question: "Parametrii de tip IN OUT sunt specifici următoarelor obiecte PL/SQL:",
+        options: [
+            "Doar procedurilor stocate",
+            "Procedurilor stocate și funcțiilor",
+            "Doar funcțiilor — acestea fiind obiectele care returnează ceva",
+            "Doar triggerelor — acest tip fiind specific lor",
+            "Oricărui bloc de cod PL/SQL"
+        ],
+        correct: 1
+    },
+    {
+        question: "Referitor la un trigger, următoarele afirmații sunt corecte:",
+        options: [
+            "Într-un trigger definit la nivel de linie unei construcții :OLD i se pot atribui valori doar dacă triggerul este de tip AFTER",
+            "Într-un trigger definit la nivel de linie unei construcții :NEW i se pot atribui valori doar dacă triggerul este de tip BEFORE",
+            "Într-un trigger definit la nivel de comandă unei construcții :OLD i se pot atribui valori doar dacă triggerul este de tip BEFORE",
+            "Într-un trigger definit la nivel de linie unei construcții :OLD i se pot atribui valori doar dacă triggerul este de tip BEFORE"
+        ],
+        correct: 1
+    },
+    {
+        question: "În cadrul secțiunii de definiții a parametrilor de intrare pentru o funcție sau o procedură stocată este necesară:",
+        options: [
+            "Precizarea numelor parametrilor, a tipului și a dimensiunii lor",
+            "Precizarea numelor parametrilor, a tipului",
+            "Precizarea numelor parametrilor, urmând ca tipul lor să fie precizat în zona DECLARE din corpul funcției sau procedurii",
+            "Doar în cazul unei funcții pot exista parametrii de intrare, fiind necesară în acest caz precizarea numelor parametrilor, a tipului și a dimensiunii lor"
+        ],
+        correct: 1
+    },
+    {
+        question: "Care dintre comenzile următoare se pot executa (presupunând tabela VANZARI cu coloanele PRODUS, PRET)?",
+        options: [
+            "SELECT PRODUS FROM VANZARI;",
+            "SELECT MAX(PRET) FROM VANZARI;",
+            "SELECT PRET FROM VANZARI WHERE PRET > 100;",
+            "SELECT COUNT(*), MIN(pret) from vanzari"
+        ],
+        correct: 3
+    },
+    {
+        question: "Utilizarea unor parametri de apel pentru un trigger presupune:",
+        options: [
+            "un trigger nu are parametrii de apel,acestia fiind specifici procedurilor stocate si functiilor",
+            "Precizarea doar a categoriei din care fac parte (IN, OUT, IN OUT)",
+            "Precizarea tipului și a dimensiunii lor unde este cazul",
+            "precizarea doar a tipului lor, nu si a dimensiunii"
+        ],
+        correct: 0
+    },
+    {
+        question: "În corpul unei funcții, o comandă „RETURN...” poate să apară scriptic:",
+        options: [
+            "O singură dată, funcție de sintaxă putând să returneze sau nu o valoare",
+            "Doar o singură dată, asigurând ieșirea din funcție sau returnând ceva",
+            "Nu este obligatorie o astfel de comandă, dar ea poate să apară ori de câte ori este nevoie funcție de ramificațiile codului",
+            "RETURN poate apărea doar la final",
+            "ori de cate ori este nevoie(functie de ramificatiile codului) insa doar una se va executa obligatoriureturnand ceva."
+        ],
+        correct: 4
+    },
+     {
+        "question": "Gradul relatiei in modelul relational reprezinta:",
+        "options": [
+            "Numarul de atribute.",
+            "Numarul de grade ierarhice.",
+            "Numarul de inregistrari duplicate.",
+            "Numarul de randuri."
+        ],
+        "correct": 0
+    },
+    {
+        "question": "Care afirmatie este adevarata cu privire la relatia dintre graduri/cardinalitatea relatiei rezultate si intrarea operatorului relational de selectie?",
+        "options": [
+            "Gradul relatiei rezultat va fi mai mic sau egal iar cardinalitatea va fi mai mica in comparatie cu tabelul de intrare.",
+            "Gradul relatiei rezultat va fi egal si cardinalitatea va fi mai mare in comparatie cu tabelul de intare.",
+            "Gradul relatiei rezultat va fi egal si cardinalitatea va fi mai mica sau egala in comparatie cu tabelul de intare.",
+            "Gradul relatiei rezultat va fi mai mare si cardinalitatea va fi mai mare in comparatie cu tabelul de intrare."
+        ],
+        "correct": 2
+    },
+    {
+        "question": "Care dintre urmatorii operatori relationari implica eliminarea dublicatelor?",
+        "options": [
+            "Redenumirea",
+            "Reuniunea",
+            "Join",
+            "Selectia"
+        ],
+        "correct": 1
+    },
+    {
+        "question": "Cand nu este necesara verificarea integritatii referentiale intro baza de date relationala?",
+        "options": [
+            "La stergerea unei inregistrari din tabelul care refera prin FK.",
+            "La stergerea unei inregistrari din tabelul referit.",
+            "La adaugarea unei inregistrari din tabelul care refera prin. FK",
+            "La modificarea valorii unei chei primare in tabelul referit."
+        ],
+        "correct": 0
+    },
+    {
+        "question": "Care afirmatie este adevarata cu privire la relatia dintre graduri/cardinalitatea relatiei rezultate si intrarile unui produs cartezian?",
+        "options": [
+            "Gradul relatiei rezultat va fi mai mare si cardinalitatea va fi egala in comparatie cu cele ale fiecarui tabelul de intrare.",
+            "Gradul relatiei rezultat va fi egal si cardinalitatea va fi mai mare in comparatie cu cele ale fiecarui tabelul de intare.",
+            "Gradul relatiei rezultat va fi mai mare si cardinalitatea va fi mai mica in comparatie cu cele ale fiecarui tabelul de intare.",
+            "Gradul relatiei rezultat va fi mai mare si cardinalitatea va fi mai mare in comparatie cu cele ale fiecarui tabelul de intrare."
+        ],
+        "correct": 3
+    },
+    {
+        "question": "Un index hash avand cheia <x1, x2, x3, x4> poate fi folosit doar pentru expresia de selectie:",
+        "options": [
+            "x1 =5 and x2>5 and x3=7 and x4=25",
+            "x1=6 and x2=9 and x3=2 and x4 =25",
+            "x1=3",
+            "x3=1"
+        ],
+        "correct": 1
+    },
+    {
+        "question": "Criteriile multiple din lista de parametri sunt interpretate ierarhic in:",
+        "options": [
+            "nici una dintre GROUP BY si ORDER BY.",
+            "ORDER BY, dar nu si GROUP BY.",
+            "GROUP BY, Dar nu si ORDER BY.",
+            "GROUP BY si ORDER BY."
+        ],
+        "correct": 1
+    },
+    {
+        "question": "Criteriul principal dupa care se alege intre un index hash si unul B+ pentru implementarea unei cautari intr-o tabela este:",
+        "options": [
+            "Cardinalitatea tabelei este mai mare decat gradul ei.",
+            "Se face cautare de intervale.",
+            "Expresia de cautare include siruri de caractere.",
+            "Tabela contine date NULL."
+        ],
+        "correct": 1
+    },
+    {
+        "question": "Costul unui plan de executie a unei interogari nu depinde de:",
+        "options": [
+            "Cardinalitatea relatiei de iesire.",
+            "Numarul de atribute ale relatiilor de intrare.",
+            "Dimensiunile relatiilor reprezentand rezultatele intermediare.",
+            "Dimensiunile indecsilor utilizati de plan."
+        ],
+        "correct": 1
+    },
+    {
+        "question": "Care dintre urmatoarele modele este folosit pentru a analiza si intelege datele aplicatiei?",
+        "options": [
+            "Modelul fizic",
+            "Nici unul din modelele listate",
+            "Modelul datelor",
+            "Modelul conceptual"
+        ],
+        "correct": 3
+    },
+    {
+        "question": "Care dintre urmatoarele nu reprezinta un mecanism de autentifiacare suportat de ORACLE:",
+        "options": [
+            "KERBEROS",
+            "RADIUS",
+            "PKI",
+            "DIAMETER"
+        ],
+        "correct": 3
+    },
+    {
+        "question": "Lista de proiecție a unei interogări SELECT poate conține un atribut de tabel și o funcție de agregare SQL doar dacă:",
+        "options": [
+            "Atributul este inclus în clauza HAVING.",
+            "Atributul este inclus în clauza GROUP BY.",
+            "Atributul este cheia primară.",
+            "Atributul este o cheie candidată."
+        ],
+        "correct": 1
+    },
+    {
+        "question": "O funcție de agregare SQL nu poate fi utilizată direct în:",
+        "options": [
+            "O subinterogare.",
+            "O clauză WHERE.",
+            "O listă de proiecție.",
+            "O clauză HAVING."
+        ],
+        "correct": 1
+    }
+        ];
+
+        // Game state
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedAnswers = [];
+        let answeredQuestions = [];
+        let gameMode = 'practice';
+        let questions = [...quizData];
+        let totalAnswered = 0;
+        let correctStreak = 0;
+        let maxStreak = 0;
+
+        // DOM elements
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const questionCounter = document.getElementById('questionCounter');
+        const progressFill = document.getElementById('progressFill');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const quizContainer = document.getElementById('quizContainer');
+        const resultScreen = document.getElementById('resultScreen');
+        const finalScore = document.getElementById('finalScore');
+        const resultFeedback = document.getElementById('resultFeedback');
+        const retryBtn = document.getElementById('retryBtn');
+        const reviewBtn = document.getElementById('reviewBtn');
+        const multipleInfo = document.getElementById('multipleInfo');
+
+        // Stats elements
+        const totalQuestionsEl = document.getElementById('totalQuestions');
+        const correctAnswersEl = document.getElementById('correctAnswers');
+        const accuracyEl = document.getElementById('accuracy');
+        const streakEl = document.getElementById('streak');
+
+        // Initialize particles
+        function createParticles() {
+            const container = document.getElementById('backgroundAnimation');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Initialize game
+        function initGame() {
+            createParticles();
+            setupEventListeners();
+            updateStats();
+            loadQuestion();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            nextBtn.addEventListener('click', nextQuestion);
+            prevBtn.addEventListener('click', prevQuestion);
+            restartBtn.addEventListener('click', restartQuiz);
+            retryBtn.addEventListener('click', restartQuiz);
+            reviewBtn.addEventListener('click', reviewIncorrect);
+
+            // Mode selector
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    gameMode = e.target.dataset.mode;
+                    restartQuiz();
+                });
+            });
+        }
+
+        // Load current question
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                showResults();
+                return;
+            }
+
+            const question = questions[currentQuestion];
+            questionText.textContent = question.question;
+            questionCounter.textContent = `Întrebarea ${currentQuestion + 1} din ${questions.length}`;
+            
+            // Update progress
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            progressFill.style.width = progress + '%';
+
+            // Clear previous options
+            optionsContainer.innerHTML = '';
+            selectedAnswers = [];
+
+            // Show multiple answers info if needed
+            const isMultiple = Array.isArray(question.correct);
+            multipleInfo.classList.toggle('hidden', !isMultiple);
+
+            // Create option buttons
+            question.options.forEach((option, index) => {
+                const optionBtn = document.createElement('div');
+                optionBtn.className = 'option';
+                optionBtn.textContent = `${String.fromCharCode(97 + index)}. ${option}`;
+                optionBtn.dataset.index = index;
+                optionBtn.addEventListener('click', () => toggleAnswer(index, optionBtn));
+                optionsContainer.appendChild(optionBtn);
+            });
+
+            // Update navigation buttons
+            prevBtn.style.display = currentQuestion > 0 ? 'block' : 'none';
+            nextBtn.textContent = currentQuestion === questions.length - 1 ? 'Finalizează' : 'Următoarea →';
+        }
+
+        // Toggle answer selection
+        function toggleAnswer(index, element) {
+            const question = questions[currentQuestion];
+            const isMultiple = Array.isArray(question.correct);
+            
+            if (isMultiple) {
+                // Toggle selection for multiple answers
+                const isSelected = selectedAnswers.includes(index);
+                if (isSelected) {
+                    selectedAnswers = selectedAnswers.filter(i => i !== index);
+                    element.classList.remove('selected');
+                } else {
+                    selectedAnswers.push(index);
+                    element.classList.add('selected');
+                }
+            } else {
+                // Single answer - clear previous selections
+                document.querySelectorAll('.option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                selectedAnswers = [index];
+                element.classList.add('selected');
+                
+                // Auto-submit after a short delay for single-answer questions
+                setTimeout(() => {
+                    if (selectedAnswers.length > 0) {
+                        checkAnswer();
+                    }
+                }, 300);
+            }
+        }
+
+        // Check answer and update UI
+        function checkAnswer() {
+            const question = questions[currentQuestion];
+            const isMultiple = Array.isArray(question.correct);
+            let isCorrect = false;
+            
+            if (isMultiple) {
+                // For multiple answers, check if all correct answers are selected and no incorrect ones
+                const correctSelected = question.correct.every(c => selectedAnswers.includes(c));
+                const noIncorrect = selectedAnswers.every(s => question.correct.includes(s));
+                isCorrect = correctSelected && noIncorrect;
+            } else {
+                // For single answer
+                isCorrect = selectedAnswers[0] === question.correct;
+            }
+            
+            // Mark answers
+            document.querySelectorAll('.option').forEach((opt, index) => {
+                const isSelected = selectedAnswers.includes(index);
+                const isAnswerCorrect = isMultiple ? 
+                    question.correct.includes(index) : 
+                    (index === question.correct);
+                
+                if (isSelected) {
+                    if (isAnswerCorrect) {
+                        opt.classList.add('correct');
+                    } else {
+                        opt.classList.add('incorrect');
+                    }
+                } else if (isAnswerCorrect && isMultiple) {
+                    opt.classList.add('correct');
+                }
+            });
+            
+            // Update score if not previously answered
+            if (!answeredQuestions[currentQuestion]) {
+                if (isCorrect) {
+                    score++;
+                    correctStreak++;
+                    maxStreak = Math.max(maxStreak, correctStreak);
+                } else {
+                    correctStreak = 0;
+                }
+                totalAnswered++;
+            }
+            
+            answeredQuestions[currentQuestion] = {
+                selected: [...selectedAnswers],
+                correct: isCorrect
+            };
+            
+            updateStats();
+        }
+
+        // Next question
+        function nextQuestion() {
+            const question = questions[currentQuestion];
+            const isMultiple = Array.isArray(question.correct);
+            
+            // For multiple-answer questions, check answer when next is clicked
+            if (isMultiple && selectedAnswers.length > 0 && !answeredQuestions[currentQuestion]) {
+                checkAnswer();
+            }
+            
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // Previous question
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion();
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            totalQuestionsEl.textContent = questions.length;
+            correctAnswersEl.textContent = score;
+            const accuracy = totalAnswered > 0 ? Math.round((score / totalAnswered) * 100) : 0;
+            accuracyEl.textContent = accuracy + '%';
+            streakEl.textContent = maxStreak;
+        }
+
+        // Show results
+        function showResults() {
+            quizContainer.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            
+            finalScore.textContent = `${score}/${questions.length}`;
+            
+            const percentage = Math.round((score / questions.length) * 100);
+            let feedback = '';
+            
+            if (percentage >= 90) {
+                feedback = '🚀 EXCEPCIONAL! Ești un expert în baze de date!';
+            } else if (percentage >= 75) {
+                feedback = '⭐ FOARTE BINE! Cunoștințele tale sunt solide!';
+            } else if (percentage >= 60) {
+                feedback = '💪 BINE! Continuă să exersezi!';
+            } else {
+                feedback = '📚 Mai este loc de îmbunătățire. Studiază și încearcă din nou!';
+            }
+            
+            resultFeedback.textContent = feedback;
+        }
+
+        // Restart quiz
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswers = [];
+            answeredQuestions = [];
+            totalAnswered = 0;
+            correctStreak = 0;
+            
+            // Setup questions based on mode
+            if (gameMode === 'random') {
+                questions = [...quizData].sort(() => Math.random() - 0.5);
+            } else if (gameMode === 'test') {
+                questions = [...quizData];
+            } else {
+                questions = [...quizData];
+            }
+
+            quizContainer.classList.remove('hidden');
+            resultScreen.classList.add('hidden');
+            updateStats();
+            loadQuestion();
+        }
+
+        // Review incorrect answers
+        function reviewIncorrect() {
+            questions = quizData.filter((_, index) => {
+                const answered = answeredQuestions[index];
+                return answered && !answered.correct;
+            });
+            
+            if (questions.length === 0) {
+                alert('Nu ai răspunsuri greșite de revizuit!');
+                return;
+            }
+            
+            restartQuiz();
+        }
+
+        // Start the game
+        initGame();
+    </script>
+</body>
+</html>
